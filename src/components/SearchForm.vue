@@ -57,7 +57,7 @@ export default {
       const video = this.includeVideo ? 'video' : ''
       const start = this.dateStart.slice(0, 4)
       const end = this.dateEnd.slice(0, 4)
-      return `images-api.nasa.gov/search?q=${q}&media_type=${video},${images}&year_start=${start}&year_end=${end}`
+      return `${process.env.VUE_APP_API_URL}/search?q=${q}&media_type=${video},${images}&year_start=${start}&year_end=${end}`
     }
   }
 }
