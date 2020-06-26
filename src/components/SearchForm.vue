@@ -1,9 +1,9 @@
 <template>
-  <form>
+  <form @submit.prevent="handleSubmit" role="form">
     <h1>Query builder</h1>
     <fieldset class="input-container">
       <input
-        class="keywords"
+        class="keywords-input"
         type="text"
         v-model="keywordsToSearch"
         placeholder="Search something like 'Apollo'..."
@@ -37,6 +37,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data: () => ({
     keywordsToSearch: '',
@@ -44,7 +46,20 @@ export default {
     includeVideo: true,
     dateStart: '1970-01-01',
     dateEnd: '2020-01-01'
-  })
+  }),
+  methods: {
+    handleSubmit() {
+      axios.get(this.computedQuery())
+    },
+    computedQuery() {
+      const q = encodeURI(this.keywordsToSearch)
+      const images = this.includeImages ? 'image' : ''
+      const video = this.includeVideo ? 'video' : ''
+      const start = this.dateStart.slice(0, 4)
+      const end = this.dateEnd.slice(0, 4)
+      return `images-api.nasa.gov/search?q=${q}&media_type=${video},${images}&year_start=${start}&year_end=${end}`
+    }
+  }
 }
 </script>
 
@@ -74,7 +89,7 @@ fieldset {
 .input-container {
   width: 100%;
 }
-.keywords {
+.keywords-input {
   padding: 10px 15px;
   width: 100%;
   border-radius: 25px;
@@ -82,7 +97,7 @@ fieldset {
   margin: 1rem 0;
   color: var(--color-dark-1);
 }
-.keywords:focus {
+.keywords-input:focus {
   outline: none;
 }
 label {
