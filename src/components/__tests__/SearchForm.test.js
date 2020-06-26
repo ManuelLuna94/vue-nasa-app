@@ -1,14 +1,13 @@
 import { render, fireEvent, waitFor } from '@testing-library/vue'
 import axios from 'axios'
-import SearchForm from '../SearchForm'
-import { wait } from 'moxios'
+import HomePage from '@/views/HomePage'
 
 jest.mock('axios')
 
 let component
 
 beforeEach(() => {
-  component = render(SearchForm)
+  component = render(HomePage)
 })
 
 describe("SearchBox's unit tests", () => {
@@ -66,13 +65,43 @@ describe("SearchBox's unit tests", () => {
 })
 
 describe("SearchForm's integration tests", () => {
+  // mock responses
+  const goodResponse = {
+    data: {
+      collection: {
+        items: [
+          {
+            href: 'Placeholder',
+            data: [
+              {
+                title: 'Placeholder',
+                description: 'Placeholder',
+                createdAt: 'Placeholder',
+                imageUrl: 'Placeholder',
+                nasa_id: 'Placeholder',
+                media_type: 'Placeholder'
+              }
+            ],
+            links: [
+              {
+                href: 'Placeholder'
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+
+  const badResponse = { data: { collection: { items: [] } } }
+
   axios.get.mockImplementation(url => {
     if (
       url ===
-      'images-api.nasa.gov/search?q=apollo%20moon&media_type=video,image&year_start=1999&year_end=2017'
+      `https://${process.env.VUE_APP_API_URL}/search?q=apollo%20moon&media_type=video,image&year_start=1999&year_end=2017`
     )
-      return { status: 200 }
-    else return { status: 404 }
+      return goodResponse
+    else return badResponse
   })
 
   let form, imagesBox, videoBox, fromDate, toDate, keywordsInput
@@ -109,7 +138,7 @@ describe("SearchForm's integration tests", () => {
     fireEvent.submit(form)
 
     await waitFor(() => expect(axios.get).toHaveBeenCalledTimes(1))
-    expect(axios.get).toHaveReturnedWith({ status: 200 })
+    expect(axios.get).toHaveReturnedWith(goodResponse)
   })
 
   it('Sends the correct request (bad request)', async () => {
@@ -117,6 +146,6 @@ describe("SearchForm's integration tests", () => {
     fireEvent.submit(form)
 
     await waitFor(() => expect(axios.get).toHaveBeenCalledTimes(2))
-    expect(axios.get).toHaveNthReturnedWith(2, { status: 404 })
+    expect(axios.get).toHaveNthReturnedWith(2, badResponse)
   })
 })

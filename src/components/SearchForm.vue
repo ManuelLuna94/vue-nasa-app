@@ -47,9 +47,29 @@ export default {
     dateStart: '1970-01-01',
     dateEnd: '2020-01-01'
   }),
+  props: {
+    updateResults: Function
+  },
   methods: {
-    handleSubmit() {
-      axios.get(this.computedQuery())
+    async handleSubmit() {
+      const data = await axios.get(this.computedQuery())
+
+      if (data.data.collection.items.length === 0) return this.updateResults([])
+
+      const dataFiltered = data.data.collection.items.map(item => {
+        const newItem = {
+          title: item.data[0].title,
+          description: item.data[0].description,
+          createdAt: item.data[0].date_created,
+          id: item.data[0].nasa_id,
+          imageUrl: item.links[0].href,
+          type: item.data[0].media_type,
+          assets: item.href
+        }
+        return newItem
+      })
+
+      this.updateResults(dataFiltered)
     },
     computedQuery() {
       const q = encodeURI(this.keywordsToSearch)
@@ -57,7 +77,7 @@ export default {
       const video = this.includeVideo ? 'video' : ''
       const start = this.dateStart.slice(0, 4)
       const end = this.dateEnd.slice(0, 4)
-      return `${process.env.VUE_APP_API_URL}/search?q=${q}&media_type=${video},${images}&year_start=${start}&year_end=${end}`
+      return `https://${process.env.VUE_APP_API_URL}/search?q=${q}&media_type=${video},${images}&year_start=${start}&year_end=${end}`
     }
   }
 }
